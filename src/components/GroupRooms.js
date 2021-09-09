@@ -43,10 +43,6 @@ const GroupRooms = ({ client, groupId, close }) => {
     }
   };
 
-  const setGroupName = async () => {
-    console.log(await client.getGroupProfile(groupId));
-  };
-
   const createRoom = async () => {
     if (newRoomName.length > 0) {
       const newRoom = await client.createRoom({
@@ -95,9 +91,6 @@ const GroupRooms = ({ client, groupId, close }) => {
         ></input>
         <button className="App-link" onClick={createRoom}>
           Create room
-        </button>
-        <button className="App-link" onClick={setGroupName}>
-          Change group name
         </button>
         <p onClick={close}>back to groups</p>
       </div>

@@ -60,9 +60,9 @@ const Groups = ({ client }) => {
           onChange={(e) => setNewGroupDescription(e.target.value)}
           placeholder="description of new group"
         ></input>
-        <button className="App-link" onClick={createGroup}>
+        <p className="App-link" onClick={createGroup}>
           Create group
-        </button>
+        </p>
         <p key={groupsDisplay.length} onClick={() => setGroupSelected("rooms")}>
           see all rooms
         </p>
