@@ -18,8 +18,20 @@ const {
   LocalStorageCryptoStore,
 } = require("matrix-js-sdk/lib/crypto/store/localStorage-crypto-store");
 
-const userInfo = JSON.parse(localStorage.getItem("userInfo"));
+const userInfo = JSON.parse(localStorage.getItem("userInfo2"));
 let matrixClient;
+
+const trustAllDevices = () => {
+  let deviceData = JSON.parse(localStorage.getItem("crypto.device_data"));
+
+  for (let user in deviceData.devices)
+    for (let device in deviceData.devices[user]) {
+      deviceData.devices[user][device].known = true;
+      deviceData.devices[user][device].verified = 1;
+    }
+
+  localStorage.setItem("crypto.device_data", JSON.stringify(deviceData));
+};
 
 ReactDOM.render(
   <React.StrictMode>
@@ -47,6 +59,8 @@ const startApp = () => {
 };
 
 const startMatrix = async (userInfo) => {
+  trustAllDevices();
+
   matrixClient = sdk.createClient({
     userId: userInfo.user_id,
     baseUrl: "https://matrix.org",
