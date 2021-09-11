@@ -24,13 +24,15 @@ let matrixClient;
 const trustAllDevices = () => {
   let deviceData = JSON.parse(localStorage.getItem("crypto.device_data"));
 
-  for (let user in deviceData.devices)
-    for (let device in deviceData.devices[user]) {
-      deviceData.devices[user][device].known = true;
-      deviceData.devices[user][device].verified = 1;
-    }
+  if (deviceData) {
+    for (let user in deviceData.devices)
+      for (let device in deviceData.devices[user]) {
+        deviceData.devices[user][device].known = true;
+        deviceData.devices[user][device].verified = 1;
+      }
 
-  localStorage.setItem("crypto.device_data", JSON.stringify(deviceData));
+    localStorage.setItem("crypto.device_data", JSON.stringify(deviceData));
+  }
 };
 
 ReactDOM.render(
