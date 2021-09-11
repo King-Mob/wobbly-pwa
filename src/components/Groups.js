@@ -17,7 +17,7 @@ const Groups = ({ client }) => {
   const createGroup = async () => {
     if (newGroupName.length > 0) {
       await client.createGroup({
-        localpart: newGroupName.replace(" ", "-"),
+        localpart: newGroupName.replace(" ", "_").toLowerCase(),
         profile: {
           name: newGroupName,
           short_description: newGroupDescription,
