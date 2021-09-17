@@ -18,7 +18,7 @@ const {
   LocalStorageCryptoStore,
 } = require("matrix-js-sdk/lib/crypto/store/localStorage-crypto-store");
 
-const userInfo = JSON.parse(localStorage.getItem("userInf"));
+const userInfo = JSON.parse(localStorage.getItem("userInfo"));
 let matrixClient;
 
 const trustAllDevices = () => {
