@@ -146,6 +146,7 @@ const Registration = ({ localStorage }) => {
   const [email, setEmail] = useState("");
   const [captchaValue, setCaptchaValue] = useState();
   const [agree, setAgree] = useState(false);
+  const [emailVerified, setEmailVerified] = useState(false);
   const [error, setError] = useState("");
   const [sessionId, setSessionId] = useState();
   const [clientSecret, setClientSecret] = useState();
@@ -272,9 +273,26 @@ const Registration = ({ localStorage }) => {
   if (regStage === "email")
     regDisplay = (
       <>
-        <p>you should have been sent an email with a link</p>
-        <p onClick={validateEmail} className="registration-button">
-          I have clicked on the link in the email
+        <div className="agree-container">
+          <input
+            type="checkbox"
+            name="terms"
+            value={emailVerified}
+            onChange={() => {
+              setEmailVerified(!emailVerified);
+            }}
+          ></input>
+          <label>I have verified my email</label>
+        </div>
+        <p
+          onClick={validateEmail}
+          className={
+            emailVerified
+              ? "registration-button"
+              : "registration-button inactive"
+          }
+        >
+          Next
         </p>
       </>
     );
@@ -282,7 +300,17 @@ const Registration = ({ localStorage }) => {
   if (regStage === "email-waiting")
     regDisplay = (
       <>
-        <p>you should have been sent an email with a link</p>
+        <div className="agree-container short">
+          <input
+            type="checkbox"
+            name="terms"
+            value={emailVerified}
+            onChange={() => {
+              setEmailVerified(!emailVerified);
+            }}
+          ></input>
+          <label>I have verified my email</label>
+        </div>
         <Loading />
       </>
     );
@@ -290,8 +318,8 @@ const Registration = ({ localStorage }) => {
   if (regStage === "error")
     regDisplay = (
       <>
-        <p>you should have been sent an email with a link</p>
         <p>{error}</p>
+        <p>This is most likely due to an email error.</p>
         <a href="..">Restart registration</a>
       </>
     );
