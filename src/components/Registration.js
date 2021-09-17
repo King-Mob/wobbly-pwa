@@ -1,4 +1,5 @@
 import { useState } from "react";
+import Loading from "./Loading";
 import ReCAPTCHA from "react-google-recaptcha";
 
 const checkAvailable = async (userName) => {
@@ -135,7 +136,7 @@ const registerEmail = async (sessionId, clientSecret, sid, username) => {
   );
 
   const result = await response.json();
-  console.log(result);
+
   return result;
 };
 
@@ -143,18 +144,24 @@ const Registration = ({ localStorage }) => {
   const [regStage, setRegStage] = useState("username");
   const [userName, setUserName] = useState("");
   const [email, setEmail] = useState("");
+  const [captchaValue, setCaptchaValue] = useState();
+  const [agree, setAgree] = useState(false);
   const [error, setError] = useState("");
   const [sessionId, setSessionId] = useState();
   const [clientSecret, setClientSecret] = useState();
   const [sid, setSid] = useState();
 
   const register = async () => {
-    if (userName.length > 0 && email.length > 0) {
+    setError("");
+
+    if (userName.length > 0 && email.length > 0 && agree && captchaValue) {
       const result = await checkAvailable(userName);
-      if (!result.available) setError(result.error);
-      else {
+      if (!result.available) {
+        setError(result.error);
+        setRegStage("username");
+      } else {
+        setRegStage("username-waiting");
         console.log(userName + " is available");
-        console.log(email);
 
         let numberArray = new Uint32Array(10);
         window.crypto.getRandomValues(numberArray);
@@ -170,21 +177,17 @@ const Registration = ({ localStorage }) => {
         setSessionId(session);
 
         await registerTerms(session);
+        await registerCaptcha(sessionId, captchaValue);
         const { sid } = await requestEmailToken(email, clientSecret);
         setSid(sid);
-        setError("");
-        setRegStage("captcha");
+        setRegStage("email");
       }
     }
   };
 
-  const onCaptchaChange = async (value) => {
-    await registerCaptcha(sessionId, value);
-
-    setRegStage("email");
-  };
-
   const validateEmail = async () => {
+    setRegStage("email-waiting");
+
     const userInfo = await registerEmail(
       sessionId,
       clientSecret,
@@ -193,75 +196,120 @@ const Registration = ({ localStorage }) => {
     );
 
     console.log(userInfo);
+    if (!userInfo.error) {
+      console.log(userInfo);
 
-    if (localStorage.getItem("userInfo"))
-      localStorage.setItem("userInfo-" + userName, JSON.stringify(userInfo));
-    else localStorage.setItem("userInfo", JSON.stringify(userInfo));
+      if (localStorage.getItem("userInfo"))
+        localStorage.setItem("userInfo-" + userName, JSON.stringify(userInfo));
+      else localStorage.setItem("userInfo", JSON.stringify(userInfo));
 
-    setRegStage("success");
+      window.location = "..";
+    } else {
+      setError(userInfo.errcode + ":" + userInfo.error);
+      setRegStage("error");
+    }
   };
 
-  let regDisplay = <p>loading</p>;
+  let regDisplay = <Loading />;
 
-  if (regStage === "username")
+  if (regStage.slice(0, 8) === "username")
     regDisplay = (
-      <>
+      <div className="registration-container">
         <input
           type="text"
           value={userName}
           onChange={(e) => setUserName(e.target.value)}
-          placeholder="new username"
+          placeholder="username"
+          className="input"
         ></input>
-        <br />
         <input
           type="text"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="email address"
+          className="input"
         ></input>
-        <br />
-        <input type="checkbox"></input>
-        <p>I agree to the terms</p>
-        <p onClick={register}>Register</p>
+        <div className="captcha-container">
+          <ReCAPTCHA
+            sitekey="6LcgI54UAAAAABGdGmruw6DdOocFpYVdjYBRe4zb"
+            onChange={(value) => setCaptchaValue(value)}
+          />
+        </div>
+        <div className="agree-container">
+          <input
+            type="checkbox"
+            name="terms"
+            value={agree}
+            onChange={() => {
+              setAgree(!agree);
+            }}
+          ></input>
+          <label>
+            I agree to{" "}
+            <a href="https://matrix-client.matrix.org/_matrix/consent?v=1.0">
+              the terms
+            </a>
+          </label>
+        </div>
+        {regStage === "username" ? (
+          <p
+            onClick={register}
+            className={
+              userName && email && captchaValue && agree
+                ? "registration-button"
+                : "registration-button inactive"
+            }
+          >
+            Next
+          </p>
+        ) : (
+          <Loading />
+        )}
         <p>{error}</p>
-      </>
-    );
-
-  if (regStage === "captcha")
-    regDisplay = (
-      <>
-        <ReCAPTCHA
-          sitekey="6LcgI54UAAAAABGdGmruw6DdOocFpYVdjYBRe4zb"
-          onChange={onCaptchaChange}
-        />
-      </>
+      </div>
     );
 
   if (regStage === "email")
     regDisplay = (
       <>
         <p>you should have been sent an email with a link</p>
-        <p onClick={validateEmail}>click here if you received it</p>
+        <p onClick={validateEmail} className="registration-button">
+          I have clicked on the link in the email
+        </p>
       </>
     );
 
-  if (regStage === "success")
+  if (regStage === "email-waiting")
     regDisplay = (
       <>
-        <p>successfully registered</p>
-        <a href="..">Click here to go back to the app</a>
+        <p>you should have been sent an email with a link</p>
+        <Loading />
+      </>
+    );
+
+  if (regStage === "error")
+    regDisplay = (
+      <>
+        <p>you should have been sent an email with a link</p>
+        <p>{error}</p>
+        <a href="..">Restart registration</a>
       </>
     );
 
   return (
-    <div>
-      <h1>Registration Time</h1>
-      <ol>
-        There are 3 registration steps.
-        <li>Choose username and email.</li>
-        <li>A captcha.</li>
-        <li>Verify your email by clicking a link</li>
-      </ol>
+    <div className="App">
+      <h1>Wobbly | Registration</h1>
+      <p className="note">
+        Wobbly uses the matrix.org homeserver for all accounts. Some notes:
+      </p>
+      <ul className="list">
+        <li>
+          For email, please use gmail, hotmail etc - matrix.org doesn't seem to
+          like rare email addresses
+        </li>
+        <li>After you click next, you should get a verification email</li>
+        <li>After verifying, come back here to complete registration</li>
+      </ul>
       {regDisplay}
     </div>
   );
