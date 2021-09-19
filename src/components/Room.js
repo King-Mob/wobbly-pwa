@@ -40,13 +40,18 @@ const Room = ({ client, id, closeRoom }) => {
   let timeline = <p>loading timeline</p>;
 
   if (room && room.timeline)
-    timeline = room.timeline.map((event, i) => <Event key={i} event={event} />);
+    timeline = room.timeline.map((event, i) => (
+      <Event key={i} event={event} client={client} />
+    ));
 
   if (room && room.selfMembership === "invite")
     timeline = <p onClick={joinRoom}>join room</p>;
 
   return (
-    <div>
+    <>
+      <p onClick={closeRoom} className="back">
+        back to all posts
+      </p>
       {room && <h3>{room.name}</h3>}
       <input
         type="text"
@@ -55,17 +60,24 @@ const Room = ({ client, id, closeRoom }) => {
         placeholder="user id to invite"
       ></input>
       <button onClick={inviteUser}>Invite</button>
-      {timeline}
-      <div>
+      <div className="timeline">{timeline}</div>
+      <div className="new-message-container">
         <input
           type="text"
           value={newMessage}
           onChange={(e) => setNewMessage(e.target.value)}
+          className="new-message"
         ></input>
-        <button onClick={sendMessage}>Send</button>
-        <p onClick={closeRoom}>close room</p>
+        <p
+          onClick={sendMessage}
+          className={
+            newMessage.length > 0 ? "group-button" : "group-button inactive"
+          }
+        >
+          Send
+        </p>
       </div>
-    </div>
+    </>
   );
 };
 

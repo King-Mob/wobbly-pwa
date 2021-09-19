@@ -1,10 +1,13 @@
 import { useState, useEffect } from "react";
 import Room from "./Room";
+import Loading from "./Loading";
 
-const Rooms = ({ client }) => {
+const Rooms = ({ client, close }) => {
   const [rooms, setRooms] = useState();
   const [newRoomName, setNewRoomName] = useState("");
   const [roomSelected, setRoomSelected] = useState("no room selected");
+  const [newPostVisible, setNewPostVisible] = useState(false);
+  const [creating, setCreating] = useState(false);
 
   console.log(rooms);
 
@@ -14,10 +17,12 @@ const Rooms = ({ client }) => {
     };
 
     loadRooms();
-  }, [client]);
+  }, [client, creating]);
 
   const createRoom = async () => {
     if (newRoomName.length > 0) {
+      setCreating(true);
+
       const newRoom = await client.createRoom({
         visibility: "private",
         invite: [],
@@ -28,6 +33,7 @@ const Rooms = ({ client }) => {
         algorithm: "m.megolm.v1.aes-sha2",
       });
 
+      setCreating(false);
       setNewRoomName("");
     }
   };
@@ -47,22 +53,47 @@ const Rooms = ({ client }) => {
 
   if (roomSelected === "no room selected") {
     roomDisplay.push(
-      <div key={roomDisplay.length}>
+      <div key={roomDisplay.length} className="invite-container">
+        <button
+          className="invite-button"
+          onClick={() => setNewPostVisible(!newPostVisible)}
+        >
+          ✏️
+        </button>
+        {creating ? (
+          <Loading />
+        ) : (
+          <p
+            onClick={createRoom}
+            className={
+              newPostVisible
+                ? newRoomName.length > 0
+                  ? "group-button"
+                  : "group-button inactive"
+                : "invisible"
+            }
+          >
+            Create
+          </p>
+        )}
         <input
           type="text"
           value={newRoomName}
           onChange={(e) => setNewRoomName(e.target.value)}
-          placeholder="new room name"
+          placeholder="new post title"
+          className={newPostVisible ? "input half" : "invisible"}
         ></input>
-        <button className="App-link" onClick={createRoom}>
-          Create room
-        </button>
       </div>
     );
   }
 
   return (
-    <div>
+    <>
+      {roomSelected === "no room selected" && (
+        <p onClick={close} className="back">
+          back to groups
+        </p>
+      )}
       {roomDisplay}
       {roomSelected !== "no room selected" && (
         <Room
@@ -71,7 +102,7 @@ const Rooms = ({ client }) => {
           closeRoom={() => setRoomSelected("no room selected")}
         />
       )}
-    </div>
+    </>
   );
 };
 

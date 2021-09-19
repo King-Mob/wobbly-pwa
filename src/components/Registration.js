@@ -221,14 +221,14 @@ const Registration = ({ localStorage }) => {
           value={userName}
           onChange={(e) => setUserName(e.target.value)}
           placeholder="username"
-          className="input"
+          className="input bottom-gap"
         ></input>
         <input
           type="text"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="email address"
-          className="input"
+          className="input bottom-gap"
         ></input>
         <div className="captcha-container">
           <ReCAPTCHA

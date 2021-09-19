@@ -18,7 +18,18 @@
 }
 
 h1 {
-  margin-top: 0;
+  margin: 0;
+  width: 100%;
+  border-bottom: white solid;
+  padding-bottom: 0.5rem;
+}
+
+h2 {
+  margin: 0;
+}
+
+h3 {
+  margin: 0;
 }
 
 .registration-button {
@@ -49,6 +60,35 @@ h1 {
   margin: 0;
 }
 
+.group-name {
+  text-align: left;
+}
+
+.group-short-description {
+  text-align: right;
+}
+
+.group-title {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.group-long-description {
+  margin: 0;
+  padding-bottom: 0.5rem;
+}
+
+.all-posts {
+  width: 90%;
+  border-top: white solid;
+  padding-top: 1rem;
+}
+
+.bottom-space {
+  margin-bottom: 1rem;
+}
+
 .input {
   display: block;
   border-top: none;
@@ -57,7 +97,6 @@ h1 {
   background-color: #282c34;
   color: white;
   font-size: calc(10px + 2vmin);
-  margin-bottom: 1rem;
 }
 
 .input::placeholder {
@@ -96,4 +135,147 @@ h1 {
 .registration-container {
   text-align: left;
   padding: 1rem 01rem;
+}
+
+.back {
+  align-self: flex-start;
+  margin-left: 5%;
+}
+
+.group-info {
+  display: flex;
+  justify-content: space-between;
+  width: 90%;
+}
+
+.new-post-container {
+  position: fixed;
+  bottom: 15%;
+  display: flex;
+  flex-direction: row-reverse;
+  width: 90%;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.invite-container {
+  position: fixed;
+  bottom: 5%;
+  display: flex;
+  flex-direction: row-reverse;
+  width: 90%;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.invite-button {
+  justify-self: flex-end;
+  height: 3rem;
+  width: 3rem;
+  background-color: slategrey;
+  border: none;
+  border-radius: 50%;
+  font-size: 1.5rem;
+  color: white;
+}
+
+.invisible {
+  display: none;
+}
+
+.half {
+  width: 50%;
+}
+
+.full {
+  width: 100%;
+}
+
+.group-button {
+  border: 1px white solid;
+  border-radius: 0.5rem;
+  float: right;
+  padding: 0.5rem;
+  margin: 0;
+}
+
+.new-group-container {
+  position: fixed;
+  bottom: 5%;
+  display: flex;
+  justify-content: space-between;
+  flex-direction: row-reverse;
+  width: 90%;
+}
+
+.input-container {
+  width: 60%;
+}
+
+.group-header {
+  display: flex;
+  justify-content: space-between;
+  width: 90%;
+  align-items: baseline;
+  border-bottom: white solid;
+}
+
+.group-title {
+  margin: 0;
+}
+
+.post {
+  text-align: left;
+  width: 90%;
+}
+
+.timeline {
+  padding-bottom: 20%;
+  width: 90%;
+}
+
+.new-message-container {
+  display: flex;
+  justify-content: space-around;
+  padding: 5%;
+  width: 100%;
+  position: fixed;
+  bottom: 0;
+  background-color: slategray;
+}
+
+.new-message {
+  display: block;
+  border-top: none;
+  border-left: none;
+  border-right: none;
+  border-color: white;
+  background-color: slategray;
+  color: white;
+  font-size: calc(10px + 2vmin);
+}
+
+.event {
+  margin: 0;
+}
+
+.message-container {
+  margin: 0.5rem 0;
+}
+
+.other {
+  text-align: left;
+}
+
+.self {
+  text-align: right;
+}
+
+.message {
+  margin: 0;
+}
+
+.sender {
+  margin: 0;
+  color: slategrey;
 }

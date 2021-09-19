@@ -9,6 +9,7 @@ import {
 import "./index.css";
 import Registration from "./components/Registration";
 import App from "./App";
+import Loading from "./components/Loading";
 import reportWebVitals from "./reportWebVitals";
 import * as sdk from "matrix-js-sdk";
 
@@ -43,7 +44,7 @@ ReactDOM.render(
           <Registration localStorage={localStorage} />
         </Route>
         <Route path="/">
-          {userInfo ? <p>loading...</p> : <Redirect to="/register" />}
+          {userInfo ? <Loading /> : <Redirect to="/register" />}
         </Route>
       </Switch>
     </Router>
