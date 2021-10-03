@@ -7357,10 +7357,10 @@ map-visit@^1.0.0:
   dependencies:
     object-visit "^1.0.0"
 
-matrix-js-sdk@^12.3.1:
-  version "12.3.1"
-  resolved "https://registry.yarnpkg.com/matrix-js-sdk/-/matrix-js-sdk-12.3.1.tgz#efa9172e96722afb03cb0e866b047022a7c6cb17"
-  integrity sha512-ysF6FQIjz8NaQHpXRs0VD1uh5kNi4tZh7NNPq54nS9YoDC7F681n2srFhoQn4M/Bv5tBLWWGNjKufXTLHp5j5g==
+matrix-js-sdk@^13.0.0:
+  version "13.0.0"
+  resolved "https://registry.yarnpkg.com/matrix-js-sdk/-/matrix-js-sdk-13.0.0.tgz#a57a4b73892e98fcd5eb0081e4745fac567211dd"
+  integrity sha512-VkZhQBd6jlRNjsqjLIoHV3fnjOSljPDuJklKsF4l6yffkra7llxQctyMsrCnoiosdAQWigbLZsKSb+HbSFmcnw==
   dependencies:
     "@babel/runtime" "^7.12.5"
     another-json "^0.2.0"

@@ -1,5 +1,5 @@
 import "./App.css";
-import Groups from "./components/Groups";
+import Groups from "./components/SpaceGroups";
 
 const App = ({ client }) => {
   return (

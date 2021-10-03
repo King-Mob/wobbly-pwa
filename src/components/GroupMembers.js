@@ -6,8 +6,12 @@ const GroupMembers = ({ client, groupId, groupName, close }) => {
 
   useEffect(() => {
     const loadMembers = async () => {
-      const groupUsers = await client.getGroupUsers(groupId);
-      setMembers(groupUsers.chunk);
+      const { joined } = await client.getJoinedRoomMembers(groupId);
+      let users = [];
+      for (let user in joined) {
+        users.push(joined[user]);
+      }
+      setMembers(users);
     };
 
     loadMembers();
@@ -16,7 +20,9 @@ const GroupMembers = ({ client, groupId, groupName, close }) => {
   let membersList = <Loading />;
 
   if (members)
-    membersList = members.map((member) => <p>{member.displayname}</p>);
+    membersList = members.map((member) => (
+      <p key={member.display_name}>{member.display_name}</p>
+    ));
 
   return (
     <>

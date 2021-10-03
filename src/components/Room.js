@@ -39,10 +39,16 @@ const Room = ({ client, id, closeRoom }) => {
 
   let timeline = <p>loading timeline</p>;
 
-  if (room && room.timeline)
+  if (room && room.timeline) {
     timeline = room.timeline.map((event, i) => (
       <Event key={i} event={event} client={client} />
     ));
+    client
+      .paginateEventTimeline(room.timelineSets[0].liveTimeline, {
+        backwards: true,
+      })
+      .then((result) => console.log(result));
+  }
 
   if (room && room.selfMembership === "invite")
     timeline = <p onClick={joinRoom}>join room</p>;

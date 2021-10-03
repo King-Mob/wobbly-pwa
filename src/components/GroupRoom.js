@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Event from "./Event";
 
 const GroupRoom = ({ client, id, closeRoom, groupName }) => {
@@ -8,22 +8,27 @@ const GroupRoom = ({ client, id, closeRoom, groupName }) => {
 
   console.log(room);
 
+  const initRoom = useCallback(async () => {
+    setRoom(client.getRoom(id));
+    client.setRoomEncryption(id, {
+      algorithm: "m.megolm.v1.aes-sha2",
+    });
+    setLoaded(true);
+  }, [client, id]);
+
   useEffect(() => {
-    if (loaded && room)
-      client
-        .setRoomEncryption(id, {
-          algorithm: "m.megolm.v1.aes-sha2",
-        })
-        .then(() => {
-          setRoom(client.getRoom(id));
-        });
-  });
+    if (loaded && room) {
+      client.paginateEventTimeline(room.timelineSets[0].liveTimeline, {
+        backwards: true,
+      });
+      setRoom(client.getRoom(id));
+    } else initRoom();
+  }, [loaded, client, id, initRoom, room]);
 
   const joinRoom = async () => {
     const result = await client.joinRoom(id);
     console.log(result);
-    setRoom(client.getRoom(id));
-    setLoaded(true);
+    initRoom();
   };
 
   const sendMessage = async () => {
@@ -40,10 +45,7 @@ const GroupRoom = ({ client, id, closeRoom, groupName }) => {
       <Event key={i} event={event} client={client} />
     ));
 
-  if (room && room.selfMembership === "invite")
-    timeline = <p onClick={joinRoom}>join room</p>;
-
-  if (!room) joinRoom();
+  if (room && room.selfMembership === "invite") joinRoom();
 
   return (
     <>

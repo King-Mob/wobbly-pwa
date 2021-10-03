@@ -5,6 +5,7 @@ import Loading from "./Loading";
 
 const GroupRooms = ({ client, groupId, close }) => {
   const [group, setGroup] = useState();
+  const [groupDescription, setGroupDescription] = useState("");
   const [rooms, setRooms] = useState();
   const [roomSelected, setRoomSelected] = useState("no room selected");
   const [newPostVisible, setNewPostVisible] = useState(false);
@@ -13,46 +14,89 @@ const GroupRooms = ({ client, groupId, close }) => {
   const [inviteVisible, setInviteVisible] = useState(false);
   const [invitee, setInvitee] = useState("");
 
-  console.log(rooms);
-  console.log(group);
-
   const loadGroupAndRooms = async () => {
-    const groupInfo = client.getGroup(groupId);
-    const groupProfile = await client.getGroupProfile(groupId);
-    const group = {
-      ...groupInfo,
-      ...groupProfile,
-    };
+    const group = await client.getRoom(groupId);
     setGroup(group);
-    setRooms((await client.getGroupRooms(groupId)).chunk);
+
+    const { rooms } = await client.getRoomHierarchy(groupId);
+    let posts = [];
+
+    for (let room of rooms[0].children_state) {
+      const post = await client.getRoom(room.state_key);
+      posts.push(post);
+    }
+
+    setRooms(posts);
   };
 
   useEffect(() => {
     const loadGroupAndRooms = async () => {
-      const groupInfo = client.getGroup(groupId);
-      const groupProfile = await client.getGroupProfile(groupId);
-      const group = {
-        ...groupInfo,
-        ...groupProfile,
-      };
+      const group = await client.getRoom(groupId);
       setGroup(group);
-      setRooms((await client.getGroupRooms(groupId)).chunk);
+
+      const { rooms } = await client.getRoomHierarchy(groupId);
+      let posts = [];
+
+      for (let room of rooms[0].children_state) {
+        const post = await client.getRoom(room.state_key);
+        posts.push(post);
+      }
+
+      setRooms(posts);
+
+      posts.forEach((post) => {
+        if (post.selfMembership === "invite") client.joinRoom(post.roomId);
+      });
+
+      await client.paginateEventTimeline(group.timelineSets[0].liveTimeline, {
+        backwards: true,
+      });
+
+      for (let event of group.timeline) {
+        if (event.event.type === "m.room.topic")
+          setGroupDescription(event.event.content.topic);
+      }
     };
 
     loadGroupAndRooms();
   }, [client, groupId]);
 
   const joinGroup = async () => {
-    await client.acceptGroupInvite(groupId);
-    console.log("joining group");
+    await client.joinRoom(groupId);
+    const { rooms } = await client.getRoomHierarchy(groupId);
+    for (let room of rooms[0].children_state) {
+      await client.joinRoom(room.state_key);
+    }
     loadGroupAndRooms();
+  };
+
+  const setPowerLevel = async (user, level) => {
+    let lastPowerEvent;
+
+    const searchTimeline = () => {
+      for (let i = group.timeline.length - 1; i >= 0; i--) {
+        const event = group.timeline[i];
+        if (event.event.type === "m.room.power_levels") lastPowerEvent = event;
+      }
+    };
+
+    while (!lastPowerEvent) {
+      searchTimeline();
+      if (!lastPowerEvent)
+        await client.paginateEventTimeline(group.timelineSets[0].liveTimeline, {
+          backwards: true,
+        });
+    }
+
+    await client.setPowerLevel(groupId, user, level, lastPowerEvent);
   };
 
   const inviteUser = async () => {
     if (invitee.length > 0) {
-      await client.inviteUserToGroup(groupId, invitee);
+      await client.invite(groupId, invitee);
+      await setPowerLevel(invitee, 50);
       rooms.forEach((room) => {
-        client.invite(room.room_id, invitee);
+        client.invite(room.roomId, invitee);
       });
       setInvitee("");
     }
@@ -62,19 +106,29 @@ const GroupRooms = ({ client, groupId, close }) => {
     if (newRoomName.length > 0) {
       setCreating(true);
 
+      const { joined } = await client.getJoinedRoomMembers(groupId);
+      delete joined[client.getUserId()];
+
+      let users = Object.keys(joined);
+
       const newRoom = await client.createRoom({
         visibility: "private",
-        invite: [],
+        invite: users,
         name: newRoomName,
       });
 
-      await client.addRoomToGroup(groupId, newRoom.room_id, false);
-
-      const groupUsers = await client.getGroupUsers(groupId);
-
-      groupUsers.chunk.forEach((user) => {
-        client.invite(newRoom.room_id, user.user_id);
+      client.setRoomEncryption(groupId, {
+        algorithm: "m.megolm.v1.aes-sha2",
       });
+
+      await client.sendStateEvent(
+        groupId,
+        "m.space.child",
+        {
+          via: ["matrix.org"],
+        },
+        newRoom.room_id
+      );
 
       await client.setRoomEncryption(newRoom.room_id, {
         algorithm: "m.megolm.v1.aes-sha2",
@@ -92,12 +146,24 @@ const GroupRooms = ({ client, groupId, close }) => {
   if (!rooms || (rooms.length === 0 && roomSelected === "no room selected"))
     roomDisplay.push(<p key={0}>no posts loaded</p>);
 
-  if (rooms && rooms.length > 0 && roomSelected === "no room selected") {
-    roomDisplay = rooms.map((room, i) => (
-      <p key={i} onClick={() => setRoomSelected(room.room_id)} className="post">
-        {room.name}
-      </p>
-    ));
+  if (
+    rooms &&
+    rooms.length > 0 &&
+    group.selfMembership === "join" &&
+    roomSelected === "no room selected"
+  ) {
+    roomDisplay = rooms.map((room, i) => {
+      console.log(room);
+      return (
+        <p
+          key={i}
+          onClick={() => setRoomSelected(room.roomId)}
+          className="post"
+        >
+          {room.name}
+        </p>
+      );
+    });
   }
 
   if (roomSelected === "no room selected") {
@@ -165,7 +231,7 @@ const GroupRooms = ({ client, groupId, close }) => {
     );
   }
 
-  if (group && group.myMembership === "invite")
+  if (group && group.selfMembership === "invite")
     roomDisplay = (
       <p className="group-button gap" onClick={joinGroup}>
         join group
@@ -186,7 +252,7 @@ const GroupRooms = ({ client, groupId, close }) => {
           <div className="group-header">
             <div className="group-title">
               <h2>{group.name}</h2>
-              <p className="group-long-description">{group.long_description}</p>
+              <p className="group-long-description">{groupDescription}</p>
             </div>
             <p
               className="group-button"
@@ -215,9 +281,10 @@ const GroupRooms = ({ client, groupId, close }) => {
           groupName={group.name}
         />
       )}
-      {/*<p className="group-button gap" onClick={loadGroupAndRooms}>
-        load rooms
-      </p>*/}
+      {/*
+        <p className="group-button gap" onClick={setPowerLevel}>
+          set power level
+        </p>*/}
     </>
   );
 };
