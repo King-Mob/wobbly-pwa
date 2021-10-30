@@ -164,23 +164,24 @@ const Registration = ({ localStorage }) => {
         setRegStage("username-waiting");
         console.log(userName + " is available");
 
-        let numberArray = new Uint32Array(10);
-        window.crypto.getRandomValues(numberArray);
+        let randomContainer = new Uint32Array(10);
+        window.crypto.getRandomValues(randomContainer);
 
         let clientSecret = "";
-        numberArray.forEach((n) => {
-          clientSecret += n;
+        randomContainer.forEach((randomNumber) => {
+          clientSecret += randomNumber;
         });
 
         setClientSecret(clientSecret);
 
         const { session } = await registerStart();
-        setSessionId(session);
-
         await registerTerms(session);
-        await registerCaptcha(sessionId, captchaValue);
+        await registerCaptcha(session, captchaValue);
+
         const { sid } = await requestEmailToken(email, clientSecret);
+
         setSid(sid);
+        setSessionId(session);
         setRegStage("email");
       }
     }
