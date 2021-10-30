@@ -99,6 +99,7 @@ const GroupRooms = ({ client, groupId, close }) => {
         client.invite(room.roomId, invitee);
       });
       setInvitee("");
+      setInviteVisible(false);
     }
   };
 

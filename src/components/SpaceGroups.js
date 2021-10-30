@@ -63,6 +63,7 @@ const Groups = ({ client }) => {
       setNewGroupName("");
       setNewGroupDescription("");
       setCreating(false);
+      setCreateVisible(false);
     }
   };
 

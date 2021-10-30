@@ -44,7 +44,11 @@ ReactDOM.render(
           <Registration localStorage={localStorage} />
         </Route>
         <Route path="/">
-          {userInfo ? <Loading /> : <Redirect to="/register" />}
+          {userInfo && userInfo.access_token ? (
+            <Loading />
+          ) : (
+            <Redirect to="/register" />
+          )}
         </Route>
       </Switch>
     </Router>
@@ -91,7 +95,7 @@ const startMatrix = async (userInfo) => {
   matrixClient.on("Room.timeline", processTimeline);
 };
 
-if (userInfo) startMatrix(userInfo);
+if (userInfo && userInfo.access_token) startMatrix(userInfo);
 
 // If you want to start measuring performance in your app, pass a function
 // to log results (for example: reportWebVitals(console.log))
