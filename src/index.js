@@ -75,7 +75,7 @@ const startMatrix = async (userInfo) => {
     deviceId: userInfo.device_id,
     crypto: true,
     timelineSupport: true,
-    sessionStore: new sdk.WebStorageSessionStore(localStorage),
+    //sessionStore: new sdk.WebStorageSessionStore(localStorage),
     cryptoStore: new LocalStorageCryptoStore(localStorage),
   });
 
